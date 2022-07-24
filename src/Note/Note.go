@@ -24,7 +24,7 @@ func GetNote(context *gin.Context) {
 		context.String(http.StatusOK, err.Error())
 		return
 	}
-	result := MongDB.GetOne(note, "note", bson.D{{"_id", _id}}, bson.D{})
+	result, _ := MongDB.GetOne(note, "note", bson.D{{"_id", _id}}, bson.D{})
 	fmt.Println(result)
 	// use this method return json obj
 	context.JSON(http.StatusOK, result)

@@ -9,13 +9,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"zhanglinghua_blog/src/Util"
 )
 
 var mgoCli *mongo.Client
 
 func InitEngine() {
 	var err error
-	clientOptions := options.Client().ApplyURI("mongodb+srv://zhanglinghua:zlh20011228@blog.egnsig0.mongodb.net/?retryWrites=true&w=majority")
+
+	clientOptions := options.Client().ApplyURI(Util.GetMyAdminMessage().DataBase)
 
 	// 连接到MongoDB
 	mgoCli, err = mongo.Connect(context.TODO(), clientOptions)
@@ -49,7 +51,7 @@ func InsertOne(database *mongo.Database, TableName string, Data interface{}) (pr
 	fmt.Println("自增ID", id.Hex())
 	return id, nil
 }
-func GetOne(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) interface{} {
+func GetOne(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) (interface{}, error) {
 	var collection = database.Collection(TableName)
 	var result bson.M
 	// get the result and make the projection
@@ -57,11 +59,11 @@ func GetOne(database *mongo.Database, TableName string, Data interface{}, Projec
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return errors.New("尚未找到匹配的对象")
+			return nil, errors.New("尚未找到匹配的对象")
 		}
-		return err.Error()
+		return nil, err
 	} else {
-		return result
+		return result, nil
 	}
 }
 
@@ -84,4 +86,18 @@ func GetAll(database *mongo.Database, TableName string, Data interface{}, Projec
 		return nil, err
 	}
 	return resultArray, nil
+}
+
+// Projection Must not be nil
+func UpDateOne(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) (bool, error) {
+	var collection = database.Collection(TableName)
+	fmt.Println(collection, Data, Projection)
+	result, err := collection.UpdateOne(context.TODO(), Projection, bson.D{{"$set", Data}})
+	fmt.Println("result---", result)
+	if err != nil {
+		return false, err
+	} else {
+		return true, nil
+	}
+
 }

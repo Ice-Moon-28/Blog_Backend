@@ -1,0 +1,5 @@
+{
+ "Username" : "Admin" ,
+ "Password": "zlh20011228",
+ "DataBase": "mongodb+srv://zhanglinghua:zlh20011228@blog.egnsig0.mongodb.net/?retryWrites=true&w=majority"
+}

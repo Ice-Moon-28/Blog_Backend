@@ -8,6 +8,7 @@ import (
 	"time"
 	BlogHandle "zhanglinghua_blog/src/Blog"
 	DreamHandle "zhanglinghua_blog/src/Dream"
+	ImgHandle "zhanglinghua_blog/src/Img"
 	NoteHandle "zhanglinghua_blog/src/Note"
 	"zhanglinghua_blog/src/Util"
 )
@@ -147,7 +148,11 @@ func main() {
 		Dream.POST("/new", authMiddleware.MiddlewareFunc(), DreamHandle.NewData)
 		Dream.POST("/delete", authMiddleware.MiddlewareFunc(), DreamHandle.DeleteData)
 	}
-
+	Img := engine.Group("/img")
+	{
+		Img.POST("/upload", authMiddleware.MiddlewareFunc(), ImgHandle.Upload)
+		Img.GET("/get/:id", ImgHandle.Get)
+	}
 	// 绑定端口，然后启动应用
 	engine.Run(":9205")
 }

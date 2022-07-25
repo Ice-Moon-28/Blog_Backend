@@ -57,6 +57,7 @@ type User struct {
 	Username string
 	Password string
 	DataBase string
+	WebSite  string
 }
 
 //获取管理员对应的信息 以及对应的数据库链接信息
@@ -74,8 +75,8 @@ func GetMyAdminMessage() *User {
 		return v
 	} else {
 		file, _ := os.OpenFile("admin.json", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-		file.WriteString("{\n \"Username\" : \"\" ,\n \"Password\": \"\",\n \"DataBase\": \"\"\n}")
+		file.WriteString("{\n \"Username\" : \"\" ,\n \"Password\": \"\",\n \"DataBase\": \"\"\n \"DataBase\": \"\"\n}")
 		defer file.Close()
-		panic(errors.New("请按照对应的管理员信息以及MongDB数据库的连接信息!"))
+		panic(errors.New("请按照对应的管理员信息以及MongDB数据库以及网站DNS的连接信息!"))
 	}
 }

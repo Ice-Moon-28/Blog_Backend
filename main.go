@@ -9,6 +9,7 @@ import (
 	BlogHandle "zhanglinghua_blog/src/Blog"
 	DreamHandle "zhanglinghua_blog/src/Dream"
 	ImgHandle "zhanglinghua_blog/src/Img"
+	Logfile "zhanglinghua_blog/src/Logfile"
 	NoteHandle "zhanglinghua_blog/src/Note"
 	"zhanglinghua_blog/src/Util"
 )
@@ -38,7 +39,8 @@ func main() {
 	engine := gin.Default()
 	// 解决CROS问题
 	engine.Use(Cors())
-
+	// 日志的中间件
+	engine.Use(Logfile.LogMiddleWare())
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
 		Key:         []byte("secret key"),

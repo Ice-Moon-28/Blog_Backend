@@ -69,10 +69,10 @@ func GetOne(database *mongo.Database, TableName string, Data interface{}, Projec
 	}
 }
 
-func GetAll(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) ([]bson.M, error) {
+func GetAll(database *mongo.Database, TableName string, Data interface{}, Projection interface{}, Options *options.FindOptions) ([]bson.M, error) {
 	var collection = database.Collection(TableName)
 	// get the result
-	cursor, err := collection.Find(context.TODO(), Data, options.Find().SetProjection(Projection))
+	cursor, err := collection.Find(context.TODO(), Data, options.Find().SetProjection(Projection), Options)
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"zhanglinghua_blog/src/MongDB"
 	"zhanglinghua_blog/src/Util"
@@ -57,7 +58,7 @@ type info struct {
 }
 
 func GetInfo(context *gin.Context) {
-	result, err := MongDB.GetAll(note, "notecategory", bson.D{}, bson.D{{"category", 1}, {"id", 1}, {"title", 1}, {"_id", 1}})
+	result, err := MongDB.GetAll(note, "notecategory", bson.D{}, bson.D{{"category", 1}, {"id", 1}, {"title", 1}, {"_id", 1}}, &options.FindOptions{})
 	if err != nil {
 		context.String(http.StatusInternalServerError, err.Error())
 	} else {
@@ -89,7 +90,7 @@ func GetInfo(context *gin.Context) {
 	}
 }
 func GetCategory(context *gin.Context) {
-	result, err := MongDB.GetAll(note, "notecategory", bson.D{}, bson.D{{"category", 1}, {"_id", 1}})
+	result, err := MongDB.GetAll(note, "notecategory", bson.D{}, bson.D{{"category", 1}, {"_id", 1}}, &options.FindOptions{})
 	var categoryArray []string
 	for i := range result {
 		// 类型断言

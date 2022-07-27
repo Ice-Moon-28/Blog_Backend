@@ -1,6 +1,7 @@
 package Img
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
@@ -37,13 +38,15 @@ func Upload(context *gin.Context) {
 		}
 		fileName := files[i].Filename
 		fileContent, _ := ioutil.ReadAll(file)
+		// 获取对应的字符串id
+		id := fmt.Sprintf("%x", Util.GetFileHash256([]byte(fileName)))
 		// 先进行删除 再进行添加图片 这样就可以实现同名图片覆盖的效果
 		//MongDB.GridfsDelete("image", fileName)
-		err = MongDB.GridfsUploadWithID("image", fileName, fileName, fileContent)
+		err = MongDB.GridfsUploadWithID("image", id, fileName, fileContent)
 		if err != nil {
 			break
 		}
-		fileNameArray = append(fileNameArray, ForMatString(fileName))
+		fileNameArray = append(fileNameArray, ForMatString(id))
 	}
 	if err == nil {
 		context.String(http.StatusCreated, strings.Join(fileNameArray, "@@@"))

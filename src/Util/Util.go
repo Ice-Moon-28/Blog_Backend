@@ -1,11 +1,13 @@
 package Util
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 func ArrayHasValue[T int | string | float32 | float64 | struct{}](value T, array []T) bool {
@@ -79,4 +81,12 @@ func GetMyAdminMessage() *User {
 		defer file.Close()
 		panic(errors.New("请按照对应的管理员信息以及MongDB数据库以及网站DNS的连接信息!"))
 	}
+}
+
+// 获取文件的hash值
+func GetFileHash256(fileName []byte) [32]byte {
+	currentTime := time.Now().String() //获取当前时间，类型是Go的时间类型Time
+	var date1 []byte = append([]byte(currentTime), fileName...)
+	var hs = sha256.Sum256(date1)
+	return hs
 }

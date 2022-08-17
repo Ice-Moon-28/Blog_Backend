@@ -47,7 +47,7 @@ func DeleteData(context *gin.Context) {
 	id, ok := json["_id"].(string)
 	Id, err := primitive.ObjectIDFromHex(id)
 	if ok && err == nil {
-		MongDB.UpDateOne(dream, "dream", bson.D{{"data", json["Data"]}}, bson.D{{"_id", Id}})
+		MongDB.UpDateOne(dream, "dream", bson.D{{"data", json["Data"]}}, bson.D{{"$set", bson.D{{"_id", Id}}}})
 		context.JSON(http.StatusOK, gin.H{"data": json["Data"]})
 	} else {
 		context.String(400, "当前传递的参数有问题")

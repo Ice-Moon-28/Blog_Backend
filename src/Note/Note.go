@@ -26,11 +26,30 @@ func GetNote(context *gin.Context) {
 		return
 	}
 	result, _ := MongDB.GetOne(note, "note", bson.D{{"_id", _id}}, bson.D{})
-	fmt.Println(result)
 	// use this method return json obj
 	context.JSON(http.StatusOK, result)
 	// use this method return string context.string()
 }
+func UpdateNote(context *gin.Context) {
+	var err error
+	var id primitive.ObjectID
+	json := make(map[string]string)
+	context.BindJSON(&json)
+	// 插入blog数据
+	fmt.Println("upadate---", json)
+	id, err = primitive.ObjectIDFromHex(json["_id"])
+	_, err = MongDB.UpDateOne(note, "note", bson.D{{"$set", bson.D{{"markdown", json["markdown"]}}},
+		{"$set", bson.D{{"title", json["title"]}}},
+		{"$set", bson.D{{"category", json["category"]}}},
+		{"$set", bson.D{{"_id", id}}},
+	}, bson.D{{"_id", id}})
+	if err != nil {
+		context.String(http.StatusInternalServerError, err.Error())
+	} else {
+		context.String(200, "更新成功")
+	}
+}
+
 func NewNote(context *gin.Context) {
 	json := make(map[string]string)
 	context.BindJSON(&json)
@@ -57,6 +76,25 @@ type info struct {
 	}
 }
 
+func DeleteNote(context *gin.Context) {
+	id := context.Query("_id")
+	// if we want to make Query according to _id,must do this convertion
+	_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		context.String(http.StatusOK, err.Error())
+		return
+	}
+	succuess, err := MongDB.DeleteOne(note, "note", bson.D{{"_id", _id}})
+	succuess1, err := MongDB.DeleteOne(note, "notecategory", bson.D{{"id", _id}})
+	// use this method return json obj
+	if succuess && succuess1 {
+		context.String(http.StatusOK, "删除成功")
+	} else {
+		context.String(http.StatusInternalServerError, err.Error())
+	}
+	// use this method return string context.string()
+}
+
 func GetInfo(context *gin.Context) {
 	result, err := MongDB.GetAll(note, "notecategory", bson.D{}, bson.D{{"category", 1}, {"id", 1}, {"title", 1}, {"_id", 1}}, &options.FindOptions{})
 	if err != nil {
@@ -69,22 +107,19 @@ func GetInfo(context *gin.Context) {
 			title, _ := v["title"].(string)
 			id, _ := v["id"].(primitive.ObjectID)
 			ValueIndex := Util.GetValueIndexInArray(str, titleArray)
-			fmt.Println(v, str, id, title, ok, ValueIndex)
 			if ok && ValueIndex == -1 {
 				titleArray = append(titleArray, str)
 				resultArray = append(resultArray, info{Title: str, TitleUrl: id, List: []struct {
 					Label string
 					Url   primitive.ObjectID
-				}{}})
+				}{{Label: title, Url: id}}})
 			} else {
-
 				resultArray[ValueIndex].List = append(resultArray[ValueIndex].List, struct {
 					Label string
 					Url   primitive.ObjectID
 				}{Label: title, Url: id})
 			}
 		}
-		fmt.Println(resultArray)
 		// Json 只能处理大写的对象属性
 		context.JSON(http.StatusOK, resultArray)
 	}

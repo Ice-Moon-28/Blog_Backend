@@ -93,8 +93,7 @@ func GetAll(database *mongo.Database, TableName string, Data interface{}, Projec
 // Projection Must not be nil
 func UpDateOne(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) (bool, error) {
 	var collection = database.Collection(TableName)
-	fmt.Println(collection, Data, Projection)
-	result, err := collection.UpdateOne(context.TODO(), Projection, bson.D{{"$set", Data}})
+	result, err := collection.UpdateOne(context.TODO(), Projection, Data)
 	fmt.Println("result---", result)
 	if err != nil {
 		return false, err
@@ -102,6 +101,16 @@ func UpDateOne(database *mongo.Database, TableName string, Data interface{}, Pro
 		return true, nil
 	}
 
+}
+
+func DeleteOne(database *mongo.Database, TableName string, Data interface{}) (bool, error) {
+	var collection = database.Collection(TableName)
+	_, err := collection.DeleteOne(context.TODO(), Data)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	return true, nil
 }
 
 var MongoDatabase = GetDatabaseConnection("blog")
@@ -152,4 +161,12 @@ func GridfsDelete(collName, fileID string) error {
 		return err
 	}
 	return nil
+}
+func CountDoc(database *mongo.Database, TableName string, Projection interface{}) (int64, error) {
+	var collection = database.Collection(TableName)
+	number, err := collection.CountDocuments(context.TODO(), Projection)
+	if err != nil {
+		return 0, err
+	}
+	return number, nil
 }

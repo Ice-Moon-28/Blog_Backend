@@ -9,8 +9,10 @@ import (
 	BlogHandle "zhanglinghua_blog/src/Blog"
 	DreamHandle "zhanglinghua_blog/src/Dream"
 	ImgHandle "zhanglinghua_blog/src/Img"
+	LifeHandle "zhanglinghua_blog/src/Life"
 	Logfile "zhanglinghua_blog/src/Logfile"
 	NoteHandle "zhanglinghua_blog/src/Note"
+	"zhanglinghua_blog/src/UserMessage"
 	"zhanglinghua_blog/src/Util"
 )
 
@@ -44,8 +46,8 @@ func main() {
 	authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
 		Key:         []byte("secret key"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
+		Timeout:     24 * time.Hour,
+		MaxRefresh:  24 * time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*User); ok {
@@ -133,8 +135,11 @@ func main() {
 		Blog.GET("/getBlog", BlogHandle.GetBlog)
 		Blog.GET("/getAllBlog", BlogHandle.GetAllBlog)
 		Blog.GET("/getBlogAllCateGory", BlogHandle.GetCategory)
+		Blog.GET("/getAllTitle", BlogHandle.GetAllTitle)
 		// 为需要验证权限的api 验证权限
 		Blog.POST("/newBlog", authMiddleware.MiddlewareFunc(), BlogHandle.NewBlog)
+		Blog.POST("/updateBlog", authMiddleware.MiddlewareFunc(), BlogHandle.ModifyBlog)
+		Blog.GET("/deleteBlog", authMiddleware.MiddlewareFunc(), BlogHandle.DeleteBlog)
 	}
 	Note := engine.Group("/note")
 	{
@@ -143,6 +148,18 @@ func main() {
 		Note.GET("/getNoteAllCateGory", NoteHandle.GetCategory)
 		// 为需要验证权限的api 验证权限
 		Note.POST("/newNote", authMiddleware.MiddlewareFunc(), NoteHandle.NewNote)
+		Note.POST("/updateNote", authMiddleware.MiddlewareFunc(), NoteHandle.UpdateNote)
+		Note.GET("/deleteNote", authMiddleware.MiddlewareFunc(), NoteHandle.DeleteNote)
+	}
+	Life := engine.Group("/life")
+	{
+		Life.GET("/getLife", LifeHandle.GetNote)
+		Life.GET("/getLifeInfo", LifeHandle.GetInfo)
+		Life.GET("/getLifeAllCateGory", LifeHandle.GetCategory)
+		// 为需要验证权限的api 验证权限
+		Life.POST("/newLife", authMiddleware.MiddlewareFunc(), LifeHandle.NewNote)
+		Life.POST("/updateLife", authMiddleware.MiddlewareFunc(), LifeHandle.UpdateNote)
+		Life.GET("/deleteLife", authMiddleware.MiddlewareFunc(), LifeHandle.DeleteNote)
 	}
 	Dream := engine.Group("/dream")
 	{
@@ -154,6 +171,11 @@ func main() {
 	{
 		Img.POST("/upload", authMiddleware.MiddlewareFunc(), ImgHandle.Upload)
 		Img.GET("/get/:id", ImgHandle.Get)
+	}
+	// 获取用户信息的接口
+	AdminMessage := engine.Group("/user")
+	{
+		AdminMessage.GET("/admin", UserMessage.GetAdminMessage)
 	}
 	// 绑定端口，然后启动应用
 	engine.Run(":9205")

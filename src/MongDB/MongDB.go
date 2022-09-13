@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"zhanglinghua_blog/src/Util"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"zhanglinghua_blog/src/Util"
 )
 
 var mgoCli *mongo.Client
@@ -93,8 +94,7 @@ func GetAll(database *mongo.Database, TableName string, Data interface{}, Projec
 // Projection Must not be nil
 func UpDateOne(database *mongo.Database, TableName string, Data interface{}, Projection interface{}) (bool, error) {
 	var collection = database.Collection(TableName)
-	result, err := collection.UpdateOne(context.TODO(), Projection, Data)
-	fmt.Println("result---", result)
+	_, err := collection.UpdateOne(context.TODO(), Projection, Data)
 	if err != nil {
 		return false, err
 	} else {

@@ -2,14 +2,17 @@ package Note
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"zhanglinghua_blog/src/MongDB"
+	"zhanglinghua_blog/src/Util"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"net/http"
-	"zhanglinghua_blog/src/MongDB"
-	"zhanglinghua_blog/src/Util"
 )
 
 var note *mongo.Database
@@ -138,5 +141,98 @@ func GetCategory(context *gin.Context) {
 		context.String(http.StatusInternalServerError, err.Error())
 	} else {
 		context.JSON(http.StatusOK, categoryArray)
+	}
+}
+// month day schedule {date , content}
+func AddCalendar(context *gin.Context) {
+	json := make(map[string]interface{})
+	context.BindJSON(&json)
+	month,_ := json["month"].(float64)
+	day,_ := json["day"].(float64)
+	log.Println(json,json["month"],json["day"],"---")
+	res, err := MongDB.GetOne(note,"calendar",bson.D{
+		{"month",month},
+		{"day",day}},
+		bson.D{})
+	log.Println(res["_id"], err,"err---")
+	if err != nil{
+		// 插入blog数据
+		_, err2 := MongDB.InsertOne(note, "calendar", bson.D{{"month", month},
+			{"day", day},
+			{"schedule", json["schedule"]},
+		})
+		if err2 == nil{
+			context.String(http.StatusOK,"")
+		}else{
+			context.String(500,err2.Error())
+		}
+	}else{
+		log.Println(json["schedule"],res["_id"])
+		success, _ := MongDB.UpDateOne(note,"calendar",bson.D{ 
+			{"$set",bson.D{{"schedule",json["schedule"]}}}},bson.D{{"_id",res["_id"]}})
+		if success{
+			context.String(200,"succuess")
+		}else{
+			context.String(500,err.Error())
+		}
+	}
+
+}
+// 获取每个月的所有date信息
+func GetDayCalendar(context *gin.Context) {
+	month , err:= strconv.ParseFloat( context.Query("month") , 64)
+	if err != nil{
+		context.String(400,err.Error())
+	}
+	day , err1:= strconv.ParseFloat( context.Query("day"),64)
+	if err1 != nil{
+		context.String(400,err1.Error())
+	}
+	log.Println(month,day,"--")
+	result , err := MongDB.GetOne(note,"calendar",bson.D{{"month",month},{"day",day}},bson.D{})
+	context.JSON(http.StatusOK,result)
+}
+// 获取每个月的所有date信息
+func GetAllCalendar(context *gin.Context) {
+	month , err:= strconv.ParseFloat( context.Query("month") , 64)
+	if err != nil{
+		context.String(400,err.Error())
+	}
+	result , _ := MongDB.GetAll(note,"calendar",bson.D{{"month",month}},bson.D{{"day",1}},&options.FindOptions{})
+	context.JSON(http.StatusOK,result)
+}
+func DeleteCalendar(context *gin.Context) {
+	month ,_:= strconv.ParseFloat( context.Query("month"),64)
+	day,_ := strconv.ParseFloat( context.Query("day"),64)
+	log.Println(day,month,"删除该事务")
+	res, err := MongDB.GetOne(note,"calendar",bson.D{
+		{"month",month},
+		{"day",day}},
+		bson.D{})
+	success,err := MongDB.DeleteOne(note,"calendar",bson.D{{"_id",res["_id"]}})
+	if success{
+		context.JSON(http.StatusOK,"success")
+	}else{
+		context.String(500,err.Error())
+	}
+}
+func ModifyCalendar(context *gin.Context){
+	json := make(map[string]interface{})
+	context.BindJSON(&json)
+	res, err := MongDB.GetOne(note,"calendar",bson.D{
+		{"month",json["month"]},
+		{"day",json["day"]}},
+		bson.D{})
+	if err == nil{
+		log.Println(json["schedule"],res["_id"])
+		success, _ := MongDB.UpDateOne(note,"calendar",bson.D{ 
+			{"$set",bson.D{{"schedule",json["schedule"]}}}},bson.D{{"_id",res["_id"]}})
+		if success{
+			context.String(200,"succuess")
+		}else{
+			context.String(500,err.Error())
+		}
+	}else{
+		context.String(500,err.Error())
 	}
 }

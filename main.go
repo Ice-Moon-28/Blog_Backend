@@ -1,8 +1,6 @@
 package main
 
 import (
-	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
@@ -14,6 +12,9 @@ import (
 	NoteHandle "zhanglinghua_blog/src/Note"
 	"zhanglinghua_blog/src/UserMessage"
 	"zhanglinghua_blog/src/Util"
+
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
 )
 
 var identityKey = "id"
@@ -171,6 +172,14 @@ func main() {
 	{
 		Img.POST("/upload", authMiddleware.MiddlewareFunc(), ImgHandle.Upload)
 		Img.GET("/get/:id", ImgHandle.Get)
+	}
+	LifeCalendar := engine.Group("/life/calendar")
+	{
+		LifeCalendar.GET("/get",LifeHandle.GetDayCalendar)
+		LifeCalendar.GET("/delete",LifeHandle.DeleteCalendar)
+		LifeCalendar.GET("/getAll",LifeHandle.GetAllCalendar)
+		LifeCalendar.POST("/add",LifeHandle.AddCalendar)
+		LifeCalendar.POST("/modify",LifeHandle.ModifyCalendar)
 	}
 	// 获取用户信息的接口
 	AdminMessage := engine.Group("/user")
